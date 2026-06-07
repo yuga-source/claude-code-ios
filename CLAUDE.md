@@ -1,9 +1,9 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+このファイルは、リポジトリ内のコードを扱う際に Claude Code (claude.ai/code) へ指示を与えるためのものです。
 
-## Project Overview
+## プロジェクト概要
 
-This is an early-stage project exploring the use of Claude Code exclusively on iPhone (iOS). The README states: "iPhoneだけでやってみる" — "Let's try it on iPhone only."
+iPhoneだけで Claude Code を使うことを探求する、初期段階のプロジェクトです。README には「iPhoneだけでやってみる」と記載されています。
 
-No source code, build system, or architecture has been established yet. This file should be updated as the project takes shape.
+現時点ではソースコード・ビルドシステム・アーキテクチャはまだ存在しません。プロジェクトが形になり次第、このファイルを更新してください。

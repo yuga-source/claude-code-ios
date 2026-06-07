@@ -1,0 +1,5 @@
+external_id,title,assignee_email,estimated_hours,due_date,status,source_label
+A-1001,A業務 提案書作成（更新版）,member1@example.com,10,2026-06-09,in_progress,業務サイトA
+A-1401,A業務 新規キャンペーン設計,member2@example.com,5,2026-06-15,todo,業務サイトA
+A-1402,A業務 既存顧客フォロー,member3@example.com,3,2026-06-18,todo,業務サイトA
+A-1403,A業務 リスト作成,member4@example.com,2,2026-06-20,todo,業務サイトA

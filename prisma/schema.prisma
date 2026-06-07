@@ -1,0 +1,106 @@
+// Team Workload Management Tool — data model
+// SQLite for MVP; switch datasource provider to postgresql for internal deployment later.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MANAGER
+  MEMBER
+}
+
+// Member's self-reported load (本人の主観申告)
+enum SubjectiveLoad {
+  RELAXED // 余裕
+  NORMAL // 普通
+  TIGHT // 逼迫
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+// Origin of a task. MANUAL = ad-hoc entry, CSV_IMPORT = imported from a site export.
+// Future site connectors add their own values (e.g. SITE_A) without touching the pipeline.
+enum TaskSource {
+  MANUAL
+  CSV_IMPORT
+}
+
+model Team {
+  id      String @id @default(cuid())
+  name    String
+  members User[]
+}
+
+model User {
+  id           String @id @default(cuid())
+  email        String @unique
+  name         String
+  passwordHash String
+  role         Role   @default(MEMBER)
+
+  team   Team?   @relation(fields: [teamId], references: [id])
+  teamId String?
+
+  // 本人の主観申告（余裕/普通/逼迫）
+  subjectiveLoad          SubjectiveLoad @default(NORMAL)
+  subjectiveLoadUpdatedAt DateTime       @default(now())
+
+  tasks         Task[]
+  importBatches ImportBatch[]
+
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+
+  // 見積もり工数(時間) — effort metric
+  estimatedHours Float @default(0)
+
+  // 締切 — deadline metric
+  dueDate DateTime?
+
+  assignee   User   @relation(fields: [assigneeId], references: [id])
+  assigneeId String
+
+  // --- Integration seam ---
+  source         TaskSource @default(MANUAL)
+  externalId     String? // task id in the originating site
+  externalSource String? // free-text site label, e.g. "業務サイトA"
+
+  importBatch   ImportBatch? @relation(fields: [importBatchId], references: [id])
+  importBatchId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Idempotent re-import: same (source, externalId) updates instead of duplicating.
+  @@unique([source, externalId])
+  @@index([assigneeId])
+}
+
+model ImportBatch {
+  id         String  @id @default(cuid())
+  adapterKey String // "csv", later "siteA-api"
+  fileName   String?
+  rowCount   Int     @default(0)
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  tasks     Task[]
+  createdAt DateTime @default(now())
+}

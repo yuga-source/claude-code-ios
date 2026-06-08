@@ -3,6 +3,9 @@ import type { NextAuthConfig } from "next-auth";
 // Edge-safe config (no bcrypt / Prisma here) so it can be used in middleware.
 // The Credentials provider with DB access is added in auth.ts (Node runtime).
 export const authConfig = {
+  // Required when self-hosting (社内サーバー) — Auth.js v5 rejects the host
+  // otherwise. Can also be set via AUTH_TRUST_HOST=true.
+  trustHost: true,
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   providers: [],

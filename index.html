@@ -92,6 +92,11 @@
   .modal .row input { text-align: left; }
   .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
 
+  /* ─── Segment control ─── */
+  .segment { display: flex; background: rgba(116,116,128,.12); border-radius: 10px; padding: 2px; margin-bottom: 0; }
+  .seg-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: transparent; color: var(--sub); }
+  .seg-btn.active { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+
   /* ─── Settings ─── */
   .setting-row { display: flex; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--border); }
   .setting-row:last-child { border-bottom: none; }
@@ -104,41 +109,108 @@
 
 <!-- ── 計算タブ ── -->
 <div class="screen active" id="screen-calc">
-  <div class="card">
-    <div class="card-title">入力</div>
-    <div class="row">
-      <label>価格</label>
-      <input type="number" id="inp-price" placeholder="198" inputmode="decimal">
-      <span class="unit">円</span>
-    </div>
-    <div class="row">
-      <label>量</label>
-      <input type="number" id="inp-qty" placeholder="500" inputmode="decimal">
-      <select id="inp-unit">
-        <option value="g">g</option>
-        <option value="kg">kg</option>
-        <option value="mg">mg</option>
-        <option value="ml">ml</option>
-        <option value="L">L</option>
-        <option value="個">個</option>
-        <option value="枚">枚</option>
-        <option value="本">本</option>
-        <option value="袋">袋</option>
-        <option value="箱">箱</option>
-      </select>
-    </div>
+  <div class="segment">
+    <button class="seg-btn active" onclick="setCalcMode('single')" id="seg-single">単品計算</button>
+    <button class="seg-btn" onclick="setCalcMode('compare')" id="seg-compare">3個比較</button>
   </div>
 
-  <div class="result-box" id="result-box" style="display:none">
-    <div class="result-label" id="result-label">100gあたり</div>
-    <div class="result-value" id="result-value">¥0.0</div>
-    <div class="result-sub" id="result-sub"></div>
-  </div>
-  <div class="card" id="result-empty">
-    <p style="color:var(--sub); text-align:center; padding:8px 0">価格と量を入力してください</p>
+  <!-- 単品モード -->
+  <div id="single-mode">
+    <div class="card">
+      <div class="card-title">入力</div>
+      <div class="row">
+        <label>価格</label>
+        <input type="number" id="inp-price" placeholder="198" inputmode="decimal">
+        <span class="unit">円</span>
+      </div>
+      <div class="row">
+        <label>量</label>
+        <input type="number" id="inp-qty" placeholder="500" inputmode="decimal">
+        <select id="inp-unit">
+          <option value="g">g</option><option value="kg">kg</option><option value="mg">mg</option>
+          <option value="ml">ml</option><option value="L">L</option><option value="個">個</option>
+          <option value="枚">枚</option><option value="本">本</option><option value="袋">袋</option><option value="箱">箱</option>
+        </select>
+      </div>
+    </div>
+    <div class="result-box" id="result-box" style="display:none">
+      <div class="result-label" id="result-label">100gあたり</div>
+      <div class="result-value" id="result-value">¥0.0</div>
+      <div class="result-sub" id="result-sub"></div>
+    </div>
+    <div class="card" id="result-empty">
+      <p style="color:var(--sub); text-align:center; padding:8px 0">価格と量を入力してください</p>
+    </div>
+    <button class="btn btn-primary" id="btn-save" disabled onclick="openSaveModal()">⭐ お気に入りに保存</button>
   </div>
 
-  <button class="btn btn-primary" id="btn-save" disabled onclick="openSaveModal()">⭐ お気に入りに保存</button>
+  <!-- 比較モード -->
+  <div id="compare-mode" style="display:none; flex-direction:column; gap:12px">
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#007aff;flex-shrink:0"></div>
+        <span style="font-size:14px;font-weight:600">商品①</span>
+      </div>
+      <div class="row">
+        <label>価格</label>
+        <input type="number" id="cmp-price-1" placeholder="198" inputmode="decimal" oninput="updateCompare()">
+        <span class="unit">円</span>
+      </div>
+      <div class="row">
+        <label>量</label>
+        <input type="number" id="cmp-qty-1" placeholder="500" inputmode="decimal" oninput="updateCompare()">
+        <select id="cmp-unit-1" onchange="updateCompare()">
+          <option value="g">g</option><option value="kg">kg</option><option value="mg">mg</option>
+          <option value="ml">ml</option><option value="L">L</option><option value="個">個</option>
+          <option value="枚">枚</option><option value="本">本</option><option value="袋">袋</option><option value="箱">箱</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#ff8000;flex-shrink:0"></div>
+        <span style="font-size:14px;font-weight:600">商品②</span>
+      </div>
+      <div class="row">
+        <label>価格</label>
+        <input type="number" id="cmp-price-2" placeholder="198" inputmode="decimal" oninput="updateCompare()">
+        <span class="unit">円</span>
+      </div>
+      <div class="row">
+        <label>量</label>
+        <input type="number" id="cmp-qty-2" placeholder="500" inputmode="decimal" oninput="updateCompare()">
+        <select id="cmp-unit-2" onchange="updateCompare()">
+          <option value="g">g</option><option value="kg">kg</option><option value="mg">mg</option>
+          <option value="ml">ml</option><option value="L">L</option><option value="個">個</option>
+          <option value="枚">枚</option><option value="本">本</option><option value="袋">袋</option><option value="箱">箱</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="width:10px;height:10px;border-radius:50%;background:#34c759;flex-shrink:0"></div>
+        <span style="font-size:14px;font-weight:600">商品③</span>
+      </div>
+      <div class="row">
+        <label>価格</label>
+        <input type="number" id="cmp-price-3" placeholder="198" inputmode="decimal" oninput="updateCompare()">
+        <span class="unit">円</span>
+      </div>
+      <div class="row">
+        <label>量</label>
+        <input type="number" id="cmp-qty-3" placeholder="500" inputmode="decimal" oninput="updateCompare()">
+        <select id="cmp-unit-3" onchange="updateCompare()">
+          <option value="g">g</option><option value="kg">kg</option><option value="mg">mg</option>
+          <option value="ml">ml</option><option value="L">L</option><option value="個">個</option>
+          <option value="枚">枚</option><option value="本">本</option><option value="袋">袋</option><option value="箱">箱</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="cmp-results"></div>
+  </div>
 </div>
 
 <!-- ── お気に入りタブ ── -->
@@ -258,6 +330,72 @@ function calcUnitPrice(price, qty, unit) {
   if (u.cat === 'count') return { value: price / qty, base: u.base };
   const normalized = qty * u.factor;
   return { value: price / normalized * u.baseAmt, base: u.base };
+}
+
+// ─── Calc mode toggle ─────────────────────────────────────────────────────────
+const CMP_COLORS = ['#007aff', '#ff8000', '#34c759'];
+const CMP_LABELS = ['①', '②', '③'];
+const CMP_RANKS  = ['🥇', '🥈', '🥉'];
+const CMP_BG     = ['#e8f5e9', '#fff8e1', '#fce4ec'];
+
+function setCalcMode(mode) {
+  const isSingle = mode === 'single';
+  document.getElementById('single-mode').style.display = isSingle ? 'contents' : 'none';
+  const cmpEl = document.getElementById('compare-mode');
+  cmpEl.style.display = isSingle ? 'none' : 'flex';
+  document.getElementById('seg-single').classList.toggle('active', isSingle);
+  document.getElementById('seg-compare').classList.toggle('active', !isSingle);
+  if (!isSingle) updateCompare();
+}
+
+function updateCompare() {
+  const items = [1, 2, 3].map(i => ({
+    idx: i - 1,
+    price: parseFloat(document.getElementById(`cmp-price-${i}`).value),
+    qty:   parseFloat(document.getElementById(`cmp-qty-${i}`).value),
+    unit:  document.getElementById(`cmp-unit-${i}`).value,
+  }));
+
+  const valid = items.map(item => {
+    const r = calcUnitPrice(item.price, item.qty, item.unit);
+    return r ? { ...item, unitPrice: r.value, base: r.base } : null;
+  }).filter(Boolean);
+
+  const el = document.getElementById('cmp-results');
+  if (valid.length < 2) {
+    el.innerHTML = valid.length === 0
+      ? ''
+      : '<div class="card"><p style="color:var(--sub);text-align:center;padding:4px 0">あと1個入力してください</p></div>';
+    return;
+  }
+
+  const cats = [...new Set(valid.map(r => UNITS[r.unit].cat))];
+  if (cats.length > 1) {
+    el.innerHTML = '<div class="card"><p style="color:var(--sub);text-align:center;padding:4px 0">単位の種類（重量・容量・個数）を揃えると比較できます</p></div>';
+    return;
+  }
+
+  const sorted = [...valid].sort((a, b) => a.unitPrice - b.unitPrice);
+  const cheapest = sorted[0].unitPrice;
+
+  el.innerHTML = '<div style="display:flex;flex-direction:column;gap:8px">' +
+    sorted.map((item, rank) => {
+      const diff = rank === 0 ? '最安値' : `+¥${(item.unitPrice - cheapest).toFixed(1)}`;
+      const diffColor = rank === 0 ? '#34c759' : '#ff3b30';
+      return `<div style="background:${CMP_BG[rank]};border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:22px">${CMP_RANKS[rank]}</span>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:${CMP_COLORS[item.idx]}">商品${CMP_LABELS[item.idx]}</div>
+            <div style="font-size:11px;color:var(--sub)">¥${item.price.toFixed(0)} / ${item.qty}${item.unit}</div>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:20px;font-weight:700;color:${diffColor}">¥${item.unitPrice.toFixed(1)}</div>
+          <div style="font-size:11px;color:var(--sub)">/${item.base} &nbsp; ${diff}</div>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
 }
 
 // ─── Calculator ───────────────────────────────────────────────────────────────
